@@ -52,94 +52,135 @@ const getJourneys = async (start, end) => {
     return await tubeRepository.getJourneys(start, end)
         .then((journeys) => {
             let startArray = [];
+            let startLines = [];
+            let endLines = [];
+            let singleJourneyLines = [];
             let endArray = [];
             let singleJourneyArray = [];
             let changeData = [];
             let filteredData = [];
             let finalData = [];
 
+            //split lines into those passing through start station, those passing through end station,
+            // and those passing through both
             journeys.forEach((journey => {
                 if (journey.stations.some(i => i.name === start)) {
                     startArray.push(journey)
+                    startLines.push({"line" : journey.line, "stations" : journey.stations.map(station => station.name)})
                 }
                 if (journey.stations.some(i => i.name === end)) {
                     endArray.push(journey)
+                    endLines.push({"line" : journey.line, "stations" : journey.stations.map(station => station.name)})
                 }
                 if (journey.stations.some(i => i.name === start) && journey.stations.some(i => i.name === end)) {
                     singleJourneyArray.push(journey);
-                    // console.log(journey.line)
+                    singleJourneyLines.push(journey.line)
+                    // console.log(journey.endLine)
                 }
             }));
-            // console.log(endArray);
+            console.log(startArray.map(i =>i.line) + " Start lines")
+            console.log(endArray.map(i =>i.line) + " End lines")   
+            console.log(singleJourneyLines)
 
-            startArray.forEach((item => {
-                if (!singleJourneyArray.includes(item)) {
-                let lineArray = item.stations.map(station => station.name);
-                let name = item.line;
-                lineArray.forEach((stop => {
-                    for (let x = 0; x < endArray.length; x++ ) {
-                        let tempArray = [];
-                    if (endArray[x].stations.some(i => i.name === stop)) {
-                        tempArray.push([name, endArray[x].line, stop]);
-                    }
-                    if (tempArray.length !== 0) {
-                        changeData.push(tempArray);
-                    }
+            //Find singlechange journey routes and changeover stations (excluding "changes" at start or end stations!)
+            startLines.forEach((startLine => {
+                if (!singleJourneyLines.includes(startLine.line)) {
+                    endLines.forEach((endLine => {
+                        let toExclude = [start, end]
+                        let startAndEndRemoved = endLine.stations.filter(x => !toExclude.includes(x))
+                        let changePoints = startAndEndRemoved.filter(x => startLine.stations.includes(x))
+                        if (changePoints.length > 0) {
+                            let changeInfo = {"startLine" : startLine.line, "changePoints" : changePoints, "endLine" : endLine.line} 
+                            changeData.push(changeInfo) 
+                        }}))
                     }
 
-                }))}
+                }))
+            console.log("\n changeData")
+            console.log(changeData)
 
+            changeData.forEach((option => {
+                option.changePoints.forEach((changePoint => {
+                   let firstLeg = getJourneyLeg(start, changePoint, startLines.find(x => x.line === option.startLine).stations)
+                   console.log(firstLeg)
+                }))
             }))
-            changeData.forEach((journey) => {
-                if ((!filteredData.some(change => change[0][0] === journey[0][0] && change[0][1] === journey[0][1]))) {
-                    filteredData.push(journey);
-                }
-                })
-            filteredData.forEach((containerArray) => {
-                finalData.push(containerArray[0]);
             })
 
-            let changeArrayStart = [];
-            let changeArrayEnd = [];
-            finalData.forEach((option) => {
-                let keyStart = journeys.findIndex(object => {return object.line === option[0];})
-                let keyEnd = journeys.findIndex(object => {return object.line === option[1];})
-                let startLine = journeys[keyStart];
-                let endLine = journeys[keyEnd];
-                let startLineName = startLine.line;
-                let endLineName = endLine.line;
-                let startList = startLine.stations;
-                let endList = endLine.stations;
-                let cutPointStart = startList.findIndex(obj => {
-                   return obj.name === option[2]
-               });
-                let cutPointEnd = endList.findIndex(obj => {
-                    return obj.name === option[2]
-                });
-                if (cutPointStart > 0) {
-                    let cutSegmentStart = startList.slice(0, (cutPointStart + 1));
-                    changeArrayStart.push(`TAKE THE ${startLineName} LINE`)
-                    changeArrayStart.push(cutSegmentStart);
-                    changeArrayStart.push(`CHANGE TO ${endLineName} LINE`)
+}
 
-                    let cutSegmentEnd = endList.slice(cutPointEnd + 1, end);
-                    changeArrayEnd.push(`TAKE THE ${endLineName} LINE`)
-                    changeArrayEnd.push(cutSegmentEnd);
-                    changeArrayEnd.push(`GET OFF THE TRAIN!!!`)
-                }
-            })
-            console.log(changeArrayStart);
-            console.log(changeArrayEnd);
-            return finalData;
-        });
+const getJourneyLeg = (first, last, track) => {
+    // console.log(track)
+    let legStart = track.indexOf(first);
+    let legEnd = track.indexOf(last) 
+    if (legStart > legEnd) {
+        return track.slice(legEnd +1, legStart + 1)
+    }
+    else if (legEnd > legStart) {
+        return track.slice(legStart, legEnd)
+    }
+    }
+
+
+
+
+module.exports.getTubes = getTubes;
+module.exports.getAllStations = getAllStations;
+module.exports.getJourneys = getJourneys;
+
+
+            // }))
+
+        //     changeData.forEach((journey) => {
+        //         if ((!filteredData.some(change => change[0][0] === journey[0][0] && change[0][1] === journey[0][1]))) {
+        //             filteredData.push(journey);
+        //         }
+        //         })
+        //     filteredData.forEach((containerArray) => {
+        //         finalData.push(containerArray[0]);
+        //     })
+
+        //     let changeArrayStart = [];
+        //     let changeArrayEnd = [];
+        //     finalData.forEach((option) => {
+        //         let keyStart = journeys.findIndex(object => {return object.endLine === option[0];})
+        //         let keyEnd = journeys.findIndex(object => {return object.endLine === option[1];})
+        //         let startLine = journeys[keyStart];
+        //         let endLine = journeys[keyEnd];
+        //         let startLineName = startLine.endLine;
+        //         let endLineName = endLine.endLine;
+        //         let startList = startLine.stations;
+        //         let endList = endLine.stations;
+        //         let cutPointStart = startList.findIndex(obj => {
+        //            return obj.name === option[2]
+        //        });
+        //         let cutPointEnd = endList.findIndex(obj => {
+        //             return obj.name === option[2]
+        //         });
+        //         if (cutPointStart > 0) {
+        //             let cutSegmentStart = startList.slice(0, (cutPointStart + 1));
+        //             changeArrayStart.push(`TAKE THE ${startLineName} LINE`)
+        //             changeArrayStart.push(cutSegmentStart);
+        //             changeArrayStart.push(`CHANGE TO ${endLineName} LINE`)
+
+        //             let cutSegmentEnd = endList.slice(cutPointEnd + 1, end);
+        //             changeArrayEnd.push(`TAKE THE ${endLineName} LINE`)
+        //             changeArrayEnd.push(cutSegmentEnd);
+        //             changeArrayEnd.push(`GET OFF THE TRAIN!!!`)
+        //         }
+        //     })
+        //     // console.log(changeArrayStart);
+        //     // console.log(changeArrayEnd);
+        //     return finalData;
+        // });
 
 
     // let lines = [];
-    // journeys.forEach(line => {
+    // journeys.forEach(endLine => {
     //     let filteredStations = [];
     //     let journeyTime = 0;
     //     if (start > end) {
-    //         filteredStations = line.stations.filter(filtered => filtered.name <= start && filtered.name >= end);
+    //         filteredStations = endLine.stations.filter(filtered => filtered.name <= start && filtered.name >= end);
     //         filteredStations.reverse();
     //         filteredStations[filteredStations.length - 1].timeToPrev = 0;
     //         journeyTime = filteredStations.reduce((sum, current) => sum + current.timeToPrev, 0);
@@ -150,7 +191,7 @@ const getJourneys = async (start, end) => {
     //         }, []);
     //
     //     } else {
-    //         filteredStations = line.stations.filter(filtered => filtered.name >= start && filtered.name <= end);
+    //         filteredStations = endLine.stations.filter(filtered => filtered.name >= start && filtered.name <= end);
     //         filteredStations[filteredStations.length - 1].timeToNext = 0;
     //         journeyTime = filteredStations.reduce((sum, current) => sum + current.timeToNext, 0);
     //         stops = filteredStations.reduce((stations, station) => {
@@ -161,13 +202,8 @@ const getJourneys = async (start, end) => {
     //     }
     //
     //     let numStops = filteredStations.length -1;
-    //     let lineData = {"line": line.line, "stops": numStops, "time": journeyTime, "stations": stops};
+    //     let lineData = {"endLine": endLine.endLine, "stops": numStops, "time": journeyTime, "stations": stops};
     //     lines.push(lineData);
     // })
     //
     //     return lines;
-}
-
-module.exports.getTubes = getTubes;
-module.exports.getAllStations = getAllStations;
-module.exports.getJourneys = getJourneys;
