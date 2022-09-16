@@ -81,7 +81,7 @@ const getJourneys = async (start, end) => {
             console.log(startArray.map(i =>i.line) + " Start lines")
             console.log(endArray.map(i =>i.line) + " End lines")   
             console.log(singleJourneyLines)
-            console.log(startArray[0])
+            // console.log(startArray[0])
 
             //Find singlechange journey routes and changeover stations (excluding "changes" at start or end stations!)
             startLines.forEach((startLine => {
@@ -91,7 +91,19 @@ const getJourneys = async (start, end) => {
                         let startAndEndRemoved = endLine.stations.filter(x => !toExclude.includes(x))
                         let changePoints = startAndEndRemoved.filter(x => startLine.stations.includes(x))
                         if (changePoints.length > 0) {
-                            let changeInfo = {"startLine" : startLine.line, "changePoints" : changePoints, "endLine" : endLine.line} 
+                            let changeIndexes = changePoints.map(x => startLine.stations.indexOf(x))
+                            let startIndex = startLine.stations.indexOf(start)
+                            let endIndex = endLine.stations.indexOf(end)
+                            console.log(startIndex)
+                            console.log(startLine.stations[startIndex])
+                            console.log(endLine.stations[endIndex])
+                            let changeInfo = {
+                                "startLine" : startLine.line, 
+                                "startIndex" : startIndex, 
+                                "changePoints" : changeIndexes, 
+                                "endLine" : endLine.line,
+                                "endIndex" : endIndex
+                              } 
                             changeData.push(changeInfo) 
                         }}))
                     }
@@ -102,10 +114,12 @@ const getJourneys = async (start, end) => {
 
             changeData.forEach((option => {
                 option.changePoints.forEach((changePoint => {
-                   let firstLeg = getJourneyLeg(start, changePoint, startArray.find(x => x.line === option.startLine).stations)
+                    let firstLine = startArray.find(x => x.line === option.startLine).stations
+                    let lastLine = endArray.find(x => x.line === option.endLine).stations
+                    let firstLeg = getJourneyLeg(option.startIndex, changePoint, firstLine)
                 //    console.log(firstLeg)
-                    firstLeg.pop()
-                   let lastLeg = getJourneyLeg(changePoint, end, endLines.find(x => x.line === option.endLine).stations)
+                    
+                   let lastLeg = getJourneyLeg(changePoint, option.endIndex, lastLine)
                    journeyoption = [firstLeg, lastLeg]
                    console.log(journeyoption)
                 }))
@@ -115,14 +129,12 @@ const getJourneys = async (start, end) => {
 }
 
 const getJourneyLeg = (first, last, track) => {
-    // console.log(track)
-    let legStart = track.indexOf(first);
-    let legEnd = track.indexOf(last) 
-    if (legStart > legEnd) {
-        return track.slice(legEnd, legStart + 1).reverse()
+    // console.log(track) 
+    if (first > last) {
+        return track.slice(last, first).reverse()
     }
-    else if (legEnd > legStart) {
-        return track.slice(legStart, legEnd +1)
+    else if (first < last) {
+        return track.slice(first, last)
     }
     }
 
