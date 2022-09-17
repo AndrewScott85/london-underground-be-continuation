@@ -91,12 +91,13 @@ const getJourneys = async (start, end) => {
                         let startAndEndRemoved = endLine.stations.filter(x => !toExclude.includes(x))
                         let changePoints = startAndEndRemoved.filter(x => startLine.stations.includes(x))
                         if (changePoints.length > 0) {
-                            let changeIndexes = changePoints.map(x => startLine.stations.indexOf(x))
+                            let changeIndexes = changePoints.map(x => [startLine.stations.indexOf(x), endLine.stations.indexOf(x)])
                             let startIndex = startLine.stations.indexOf(start)
                             let endIndex = endLine.stations.indexOf(end)
                             console.log(startIndex)
                             console.log(startLine.stations[startIndex])
                             console.log(endLine.stations[endIndex])
+                            console.log(changeIndexes)
                             let changeInfo = {
                                 "startLine" : startLine.line, 
                                 "startIndex" : startIndex, 
@@ -116,12 +117,12 @@ const getJourneys = async (start, end) => {
                 option.changePoints.forEach((changePoint => {
                     let firstLine = startArray.find(x => x.line === option.startLine).stations
                     let lastLine = endArray.find(x => x.line === option.endLine).stations
-                    let firstLeg = getJourneyLeg(option.startIndex, changePoint, firstLine)
+                    let firstLeg = getJourneyLeg(option.startIndex, changePoint[0], firstLine)
                 //    console.log(firstLeg)
                     
-                   let lastLeg = getJourneyLeg(changePoint, option.endIndex, lastLine)
+                   let lastLeg = getJourneyLeg(changePoint[1], option.endIndex, lastLine)
                    journeyoption = [firstLeg, lastLeg]
-                   console.log(journeyoption)
+                //    console.log(journeyoption)
                 }))
             }))
             })
@@ -131,14 +132,23 @@ const getJourneys = async (start, end) => {
 const getJourneyLeg = (first, last, track) => {
     // console.log(track) 
     if (first > last) {
-        return track.slice(last, first).reverse()
+        let leg = track.slice(last, first + 1).reverse();
+        // leg.forEach((station) => delete station.timeToNext);
+        // leg.forEach((station) => swapTimes(station, "timeToPrev", "timeToNext"))
+        console.log(leg);
+        return leg
+        
+        
     }
     else if (first < last) {
-        return track.slice(first, last)
+        return track.slice(first, last + 1);
     }
     }
 
-
+    function swapTimes(obj, key1, key2) {
+        [obj[key1], obj[key2]] = [obj[key2], obj[key1]];
+     }
+     
 
 
 module.exports.getTubes = getTubes;
