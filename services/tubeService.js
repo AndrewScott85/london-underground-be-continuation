@@ -114,15 +114,21 @@ const getJourneys = async (start, end) => {
             console.log(changeData)
 
             changeData.forEach((option => {
+                let firstLine = startArray.find(x => x.line === option.startLine).stations
+                let lastLine = endArray.find(x => x.line === option.endLine).stations
+                let startZone = firstLine[option.startIndex].zone;
+                let endZone = lastLine[option.endIndex].zone
+                    // console.log(startZone, endZone)
                 option.changePoints.forEach((changePoint => {
-                    let firstLine = startArray.find(x => x.line === option.startLine).stations
-                    let lastLine = endArray.find(x => x.line === option.endLine).stations
                     let firstLeg = getJourneyLeg(option.startIndex, changePoint[0], firstLine)
-                //    console.log(firstLeg)
+                    firstLeg[firstLeg.length -1].stop += ` - CHANGE TO ${(option.endLine).toUpperCase()} LINE`;
+                    firstLeg[firstLeg.length -1].time = 90
+
+                    console.log(firstLeg)
                     
-                   let lastLeg = getJourneyLeg(changePoint[1], option.endIndex, lastLine)
-                   journeyoption = [firstLeg, lastLeg]
-                //    console.log(journeyoption)
+                    let lastLeg = getJourneyLeg(changePoint[1], option.endIndex, lastLine)
+                    journeyoption = [firstLeg, lastLeg]
+                    // console.log(journeyoption)
                 }))
             }))
             })
@@ -133,15 +139,16 @@ const getJourneyLeg = (first, last, track) => {
     // console.log(track) 
     if (first > last) {
         let leg = track.slice(last, first + 1).reverse();
-        // leg.forEach((station) => delete station.timeToNext);
-        // leg.forEach((station) => swapTimes(station, "timeToPrev", "timeToNext"))
-        console.log(leg);
-        return leg
-        
-        
+        return leg.map(({name, timeToPrev}) => {
+            return {"stop" : name, "time" : timeToPrev}
+        });
     }
-    else if (first < last) {
-        return track.slice(first, last + 1);
+
+    else {
+        let leg = track.slice(first, last + 1);
+        return leg.map(({name, timeToNext}) => {
+            return {"stop" : name, "time" : timeToNext}
+        });
     }
     }
 
