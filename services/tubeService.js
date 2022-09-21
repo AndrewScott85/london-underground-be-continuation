@@ -58,35 +58,40 @@ const getJourneys = async (start, end) => {
             let endArray = [];
             let singleJourneyArray = [];
             let changeData = [];
-            let filteredData = [];
+            let singleLineData = [];
+            let oneChangeData = []
             let finalData = [];
 
             //split lines into those passing through start station, those passing through end station,
             // and those passing through both
             journeys.forEach((journey => {
-                if (journey.stations.some(i => i.name === start)) {
+                if (journey.stations.some(i => i.name === start) && journey.stations.some(i => i.name === end)) {
+                    singleJourneyArray.push(journey);
+                    singleJourneyLines.push({"line" : journey.line, "stations" : journey.stations.map(station => station.name)})
+                    // console.log(journey.endLine)
+                }
+                else if (journey.stations.some(i => i.name === start)) {
                     startArray.push(journey)
                     startLines.push({"line" : journey.line, "stations" : journey.stations.map(station => station.name)})
                 }
-                if (journey.stations.some(i => i.name === end)) {
+                else if (journey.stations.some(i => i.name === end)) {
                     endArray.push(journey)
                     endLines.push({"line" : journey.line, "stations" : journey.stations.map(station => station.name)})
                 }
-                if (journey.stations.some(i => i.name === start) && journey.stations.some(i => i.name === end)) {
-                    singleJourneyArray.push(journey);
-                    singleJourneyLines.push(journey.line)
-                    // console.log(journey.endLine)
-                }
+                
             }));
-            console.log(startArray.map(i =>i.line) + " Start lines")
-            console.log(endArray.map(i =>i.line) + " End lines")   
-            console.log(singleJourneyLines)
-            // console.log(startArray[0])
+
+            singleJourneyArray.forEach((line) => {
+                line.stations.reduce((next, station) => {
+                    let {name} = station;
+                    console.log({...next, [name]: station});
+                })
+            })
 
             //Find singlechange journey routes and changeover stations (excluding "changes" at start or end stations!)
             startLines.forEach((startLine => {
-                if (!singleJourneyLines.includes(startLine.line)) {
-                    endLines.forEach((endLine => {
+                endLines.forEach((endLine => {
+                    if (endLine.line != startLine.line) {
                         let toExclude = [start, end]
                         let startAndEndRemoved = endLine.stations.filter(x => !toExclude.includes(x))
                         let changePoints = startAndEndRemoved.filter(x => startLine.stations.includes(x))
@@ -94,43 +99,47 @@ const getJourneys = async (start, end) => {
                             let changeIndexes = changePoints.map(x => [startLine.stations.indexOf(x), endLine.stations.indexOf(x)])
                             let startIndex = startLine.stations.indexOf(start)
                             let endIndex = endLine.stations.indexOf(end)
-                            console.log(startIndex)
-                            console.log(startLine.stations[startIndex])
-                            console.log(endLine.stations[endIndex])
-                            console.log(changeIndexes)
                             let changeInfo = {
                                 "startLine" : startLine.line, 
                                 "startIndex" : startIndex, 
                                 "changePoints" : changeIndexes, 
                                 "endLine" : endLine.line,
                                 "endIndex" : endIndex
-                              } 
+                            } 
                             changeData.push(changeInfo) 
-                        }}))
-                    }
+                    }}}))
+                // }
 
-                }))
-            console.log("\n changeData")
-            console.log(changeData)
+            }))
 
+            // get all required info for possible single-change journeys
             changeData.forEach((option => {
                 let firstLine = startArray.find(x => x.line === option.startLine).stations
                 let lastLine = endArray.find(x => x.line === option.endLine).stations
                 let startZone = firstLine[option.startIndex].zone;
                 let endZone = lastLine[option.endIndex].zone
-                    // console.log(startZone, endZone)
                 option.changePoints.forEach((changePoint => {
                     let firstLeg = getJourneyLeg(option.startIndex, changePoint[0], firstLine)
                     firstLeg[firstLeg.length -1].stop += ` - CHANGE TO ${(option.endLine).toUpperCase()} LINE`;
                     firstLeg[firstLeg.length -1].time = 90
-
-                    console.log(firstLeg)
-                    
-                    let lastLeg = getJourneyLeg(changePoint[1], option.endIndex, lastLine)
-                    journeyoption = [firstLeg, lastLeg]
-                    // console.log(journeyoption)
+                    let lastLeg = getJourneyLeg(changePoint[1], option.endIndex, lastLine);
+                    lastLeg[lastLeg.length -1].time = 0;
+                    let journeyOption = [...firstLeg, ...lastLeg];
+                    let journeyTime = journeyOption.reduce((a,b) => a +b.time, 0);
+                    let journeyStops = journeyOption.length -1;
+                    let journeyPrice = 399 + getPrice(startZone, endZone);
+                    console.log(journeyTime)
+                    let routeData = {
+                        "lines" : [option.startLine, option.endLine],
+                        "stops" : journeyStops,
+                        "time" : journeyTime,
+                        "price" : journeyPrice,
+                        "stations" : journeyOption
+                    }
+                    oneChangeData.push(routeData)
                 }))
             }))
+            return oneChangeData.sort((a,b) => a.time - b.time);
             })
 
 }
@@ -152,10 +161,14 @@ const getJourneyLeg = (first, last, track) => {
     }
     }
 
-    function swapTimes(obj, key1, key2) {
-        [obj[key1], obj[key2]] = [obj[key2], obj[key1]];
-     }
-     
+const getPrice = (startZone, endZone) => {
+    if (startZone > endZone) {
+        return 70 * (startZone - endZone);
+    }
+    else {
+        return 35 * (endZone - startZone);
+    }
+}    
 
 
 module.exports.getTubes = getTubes;
