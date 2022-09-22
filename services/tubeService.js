@@ -81,12 +81,27 @@ const getJourneys = async (start, end) => {
                 
             }));
 
-            singleJourneyArray.forEach((line) => {
-                line.stations.reduce((next, station) => {
-                    let {name} = station;
-                    console.log({...next, [name]: station});
-                })
+            singleJourneyLines.forEach((line) => {
+              let startIndex = line.stations.indexOf(start);
+              let endIndex = line.stations.indexOf(end);
+              let lineInfo = singleJourneyArray.find(x => x.line === line.line)
+              let startZone = lineInfo.stations[startIndex].zone;
+              let endZone = lineInfo.stations[endIndex].zone;
+              let trip = getJourneyLeg(startIndex, endIndex, lineInfo.stations);
+              let journeyTime = trip.reduce((a,b) => a +b.time, 0);
+                    let journeyStops = trip.length -1;
+                    let journeyPrice = 399 + getPrice(startZone, endZone);
+              let routeData = {
+                "line" : line.line,
+                "stops" : journeyStops,
+                "time" : journeyTime,
+                "price" : journeyPrice,
+                "stations" : trip
+            }
+            singleLineData.push(routeData)
             })
+            singleLineData.sort((a,b) => a.time - b.time);
+            
 
             //Find singlechange journey routes and changeover stations (excluding "changes" at start or end stations!)
             startLines.forEach((startLine => {
@@ -139,7 +154,8 @@ const getJourneys = async (start, end) => {
                     oneChangeData.push(routeData)
                 }))
             }))
-            return oneChangeData.sort((a,b) => a.time - b.time);
+            oneChangeData.sort((a,b) => a.time - b.time);
+            return [singleLineData, oneChangeData];
             })
 
 }
