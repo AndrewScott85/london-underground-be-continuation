@@ -71,9 +71,10 @@ const getJourneys = async (start, end) => {
               let startZone = lineInfo.stations[startIndex].zone;
               let endZone = lineInfo.stations[endIndex].zone;
               let trip = getJourneyLeg(startIndex, endIndex, lineInfo.stations);
+              trip[trip.length -1].time = 0;
               let journeyTime = trip.reduce((a,b) => a +b.time, 0);
-                    let journeyStops = trip.length -1;
-                    let journeyPrice = 399 + getPrice(startZone, endZone);
+              let journeyStops = trip.length -1;
+              let journeyPrice = 399 + getPrice(startZone, endZone);
               let routeData = {
                 "line" : line.line,
                 "stops" : journeyStops,
