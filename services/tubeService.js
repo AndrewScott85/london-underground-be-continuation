@@ -71,8 +71,7 @@ const getJourneys = async (start, end) => {
               let startZone = lineInfo.stations[startIndex].zone;
               let endZone = lineInfo.stations[endIndex].zone;
               let trip = getJourneyLeg(startIndex, endIndex, lineInfo.stations);
-              trip[trip.length -1].time = 0;
-              let journeyTime = trip.reduce((a,b) => a +b.time, 0);
+              let journeyTime = trip.reduce((a,b) => a + b.time, 0);
               let journeyStops = trip.length -1;
               let journeyPrice = 399 + getPrice(startZone, endZone);
               let routeData = {
@@ -120,11 +119,10 @@ const getJourneys = async (start, end) => {
                 option.changePoints.forEach((changePoint => {
                     let firstLeg = getJourneyLeg(option.startIndex, changePoint[0], firstLine)
                     firstLeg[firstLeg.length -1].stop += ` - CHANGE TO ${(option.endLine).toUpperCase()} LINE`;
-                    firstLeg[firstLeg.length -1].time = 90
                     let lastLeg = getJourneyLeg(changePoint[1], option.endIndex, lastLine);
-                    lastLeg[lastLeg.length -1].time = 0;
-                    let journeyOption = [...firstLeg, ...lastLeg];
-                    let journeyTime = journeyOption.reduce((a,b) => a +b.time, 0);
+                    let journeyOption = [firstLeg, lastLeg];
+                    console.log(journeyOption)
+                    let journeyTime = journeyOption.reduce((a,b) => a +b.reduce((x,y) => x + y.time, 0),0) + 90;
                     let journeyStops = journeyOption.length -1;
                     let journeyPrice = 399 + getPrice(startZone, endZone);
                     console.log(journeyTime)
@@ -148,6 +146,7 @@ const getJourneyLeg = (first, last, track) => {
     // console.log(track) 
     if (first > last) {
         let leg = track.slice(last, first + 1).reverse();
+        leg[leg.length -1].timeToPrev = 0;
         return leg.map(({name, timeToPrev}) => {
             return {"stop" : name, "time" : timeToPrev}
         });
@@ -155,6 +154,7 @@ const getJourneyLeg = (first, last, track) => {
 
     else {
         let leg = track.slice(first, last + 1);
+        leg[leg.length -1].timeToNext = 0;
         return leg.map(({name, timeToNext}) => {
             return {"stop" : name, "time" : timeToNext}
         });
