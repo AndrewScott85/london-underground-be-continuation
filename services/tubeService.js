@@ -143,21 +143,22 @@ const getJourneys = async (start, end) => {
 }
 
 const getJourneyLeg = (first, last, track) => {
-    // console.log(track) 
     if (first > last) {
-        let leg = track.slice(last, first + 1).reverse();
-        leg[leg.length -1].timeToPrev = 0;
-        return leg.map(({name, timeToPrev}) => {
+        let reduced = track.slice(last, first + 1).reverse(); 
+        let leg = reduced.map(({name, timeToPrev}) => {
             return {"stop" : name, "time" : timeToPrev}
         });
+        leg[leg.length -1].time = 0;
+        return leg;
     }
 
     else {
-        let leg = track.slice(first, last + 1);
-        leg[leg.length -1].timeToNext = 0;
-        return leg.map(({name, timeToNext}) => {
+        let reduced = track.slice(first, last + 1);
+        let leg = reduced.map(({name, timeToNext}) => {
             return {"stop" : name, "time" : timeToNext}
         });
+        leg[leg.length -1].time = 0;
+        return leg;
     }
     }
 
