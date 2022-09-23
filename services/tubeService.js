@@ -118,12 +118,14 @@ const getJourneys = async (start, end) => {
                 let endZone = lastLine[option.endIndex].zone
                 option.changePoints.forEach((changePoint => {
                     let firstLeg = getJourneyLeg(option.startIndex, changePoint[0], firstLine)
-                    firstLeg[firstLeg.length -1].stop += ` - CHANGE TO ${(option.endLine).toUpperCase()} LINE`;
+                    // firstLeg[firstLeg.length -1].stop += ` - CHANGE LINES`;
                     let lastLeg = getJourneyLeg(changePoint[1], option.endIndex, lastLine);
                     let journeyOption = [firstLeg, lastLeg];
                     console.log(journeyOption)
                     let journeyTime = journeyOption.reduce((a,b) => a +b.reduce((x,y) => x + y.time, 0),0) + 90;
-                    let journeyStops = journeyOption.length -1;
+                    let firstLegStops = firstLeg.length -1;
+                    let lastLegStops = lastLeg.length -1
+                    let journeyStops = firstLeg.length + lastLeg.length;
                     let journeyPrice = 399 + getPrice(startZone, endZone);
                     console.log(journeyTime)
                     let routeData = {
@@ -131,7 +133,9 @@ const getJourneys = async (start, end) => {
                         "stops" : journeyStops,
                         "time" : journeyTime,
                         "price" : journeyPrice,
-                        "stations" : journeyOption
+                        "stations" : journeyOption,
+                        "firstLegStops" : firstLegStops,
+                        "lastLegStops" : lastLegStops
                     }
                     oneChangeData.push(routeData)
                 }))
