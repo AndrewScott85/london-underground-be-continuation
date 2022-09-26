@@ -118,7 +118,7 @@ const getJourneys = async (start, end) => {
                 let endZone = lastLine[option.endIndex].zone
                 option.changePoints.forEach((changePoint => {
                     let firstLeg = getJourneyLeg(option.startIndex, changePoint[0], firstLine)
-                    // firstLeg[firstLeg.length -1].stop += ` - CHANGE LINES`;
+                    firstLeg[firstLeg.length -1].stop += ` - CHANGE LINES`;
                     let lastLeg = getJourneyLeg(changePoint[1], option.endIndex, lastLine);
                     let journeyOption = [firstLeg, lastLeg];
                     console.log(journeyOption)
