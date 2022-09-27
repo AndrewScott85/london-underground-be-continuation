@@ -43,7 +43,6 @@ const getJourneys = async (start, end) => {
             let changeData = [];
             let singleLineData = [];
             let oneChangeData = []
-            let finalData = [];
 
             //split lines into those passing through start station, those passing through end station,
             // and those passing through both
@@ -110,24 +109,25 @@ const getJourneys = async (start, end) => {
 
             }))
 
-            // get all required info for possible single-change journeys
+            // Get all required info for possible single-change journeys
+            // In the supplied data, the same station may not always be in the same zone across all lines,
+            // so start and end zones need to be checked on each line. 
             changeData.forEach((option => {
+                let tempData =[];
                 let firstLine = startArray.find(x => x.line === option.startLine).stations
                 let lastLine = endArray.find(x => x.line === option.endLine).stations
                 let startZone = firstLine[option.startIndex].zone;
                 let endZone = lastLine[option.endIndex].zone
                 option.changePoints.forEach((changePoint => {
-                    let firstLeg = getJourneyLeg(option.startIndex, changePoint[0], firstLine)
+                    let firstLeg = getJourneyLeg(option.startIndex, changePoint[0], firstLine);
                     firstLeg[firstLeg.length -1].stop += ` - CHANGE LINES`;
                     let lastLeg = getJourneyLeg(changePoint[1], option.endIndex, lastLine);
                     let journeyOption = [firstLeg, lastLeg];
-                    console.log(journeyOption)
                     let journeyTime = journeyOption.reduce((a,b) => a +b.reduce((x,y) => x + y.time, 0),0) + 90;
                     let firstLegStops = firstLeg.length -1;
-                    let lastLegStops = lastLeg.length -1
+                    let lastLegStops = lastLeg.length -1;
                     let journeyStops = firstLeg.length + lastLeg.length;
                     let journeyPrice = 399 + getPrice(startZone, endZone);
-                    console.log(journeyTime)
                     let routeData = {
                         "lines" : [option.startLine, option.endLine],
                         "stops" : journeyStops,
@@ -137,15 +137,19 @@ const getJourneys = async (start, end) => {
                         "firstLegStops" : firstLegStops,
                         "lastLegStops" : lastLegStops
                     }
-                    oneChangeData.push(routeData)
+                    tempData.push(routeData)
+
                 }))
+                // sort possible change points and return fastest for each combination of start line & end line
+                tempData.sort((a,b) => a.time - b.time);
+                oneChangeData.push(tempData[0]);
             }))
             oneChangeData.sort((a,b) => a.time - b.time);
             return [singleLineData, oneChangeData];
             })
 
 }
-
+// slice line array at given start and end points and return only the values required
 const getJourneyLeg = (first, last, track) => {
     if (first > last) {
         let reduced = track.slice(last, first + 1).reverse(); 
@@ -166,6 +170,7 @@ const getJourneyLeg = (first, last, track) => {
     }
     }
 
+//calculate price given start and end points
 const getPrice = (startZone, endZone) => {
     if (startZone > endZone) {
         return 70 * (startZone - endZone);
