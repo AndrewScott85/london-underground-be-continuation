@@ -1,10 +1,5 @@
 const tubeRepository = require('../repositories/tubeRepository');
 
-const getTubes = async () => {
-    console.log(`Service: getTubes`);
-    return await tubeRepository.getTubes();
-}
-
 const getAllStations = async () => {
     console.log(`Service: getAllStations`);
     return await tubeRepository.getAllStations()
@@ -50,7 +45,6 @@ const getJourneys = async (start, end) => {
                 if (journey.stations.some(i => i.name === start) && journey.stations.some(i => i.name === end)) {
                     singleJourneyArray.push(journey);
                     singleJourneyLines.push({"line" : journey.line, "stations" : journey.stations.map(station => station.name)})
-                    // console.log(journey.endLine)
                 }
                 else if (journey.stations.some(i => i.name === start)) {
                     startArray.push(journey)
@@ -118,27 +112,25 @@ const getJourneys = async (start, end) => {
                 let lastLine = endArray.find(x => x.line === option.endLine).stations
                 let startZone = firstLine[option.startIndex].zone;
                 let endZone = lastLine[option.endIndex].zone
+                
                 option.changePoints.forEach((changePoint => {
                     let firstLeg = getJourneyLeg(option.startIndex, changePoint[0], firstLine);
                     firstLeg[firstLeg.length -1].stop += ` - CHANGE LINES`;
                     let lastLeg = getJourneyLeg(changePoint[1], option.endIndex, lastLine);
                     let journeyOption = [firstLeg, lastLeg];
-                    let journeyTime = journeyOption.reduce((a,b) => a +b.reduce((x,y) => x + y.time, 0),0) + 90;
-                    let firstLegStops = firstLeg.length -1;
-                    let lastLegStops = lastLeg.length -1;
-                    let journeyStops = firstLeg.length + lastLeg.length;
-                    let journeyPrice = 399 + getPrice(startZone, endZone);
+                    let journeyTime = journeyOption.reduce((a,b) => a +b.reduce((x,y) => x + y.time, 0),0) + 90;    
                     let routeData = {
                         "lines" : [option.startLine, option.endLine],
-                        "stops" : journeyStops,
+                        "firstLegStops" : firstLeg.length -1,
+                        "lastLegStops" : lastLeg.length -1,
+                        "firstLegTime" : firstLeg.reduce((a,b) => a + b.time, 0),
+                        "lastLegTime" : lastLeg.reduce((a,b) => a + b.time, 0),
+                        "stops" : firstLeg.length + lastLeg.length -2,
                         "time" : journeyTime,
-                        "price" : journeyPrice,
+                        "price" : 399 + getPrice(startZone, endZone),
                         "stations" : journeyOption,
-                        "firstLegStops" : firstLegStops,
-                        "lastLegStops" : lastLegStops
                     }
                     tempData.push(routeData)
-
                 }))
                 // sort possible change points and return fastest for each combination of start line & end line
                 tempData.sort((a,b) => a.time - b.time);
