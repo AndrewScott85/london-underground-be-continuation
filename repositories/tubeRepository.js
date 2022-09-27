@@ -12,8 +12,10 @@ const getAllStations = async () => {
 
 const getJourneys = async (start, end) => {
     console.log(`Repository: getJourneys`);
-    return await tubes.find({$and: [{"stations.name": start}, {"stations.name" : end}]}).toArray();
-
+    return await tubes.find(
+                {"stations.name":
+                        {$in: [start, end]}
+        }).toArray();
 }
 
 module.exports.getAllStations = getAllStations;
