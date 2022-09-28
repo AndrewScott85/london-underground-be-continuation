@@ -5,21 +5,25 @@
     "mongodb": "^4.7.0",
     "mongoose": "^6.6.2"
   },
+  "engines": {
+    "node": "16.16"
+  },
   "name": "2022-mar-london-underground-be",
   "description": "A journey planning application.",
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "start" : " node app.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/iO-Academy/2022-mar-london-underground-be.git"
+    "url": "git+https://github.com/AndrewScott85/london-underground-be-continuation"
   },
   "author": "Andrew Scott",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/iO-Academy/2022-mar-london-underground-be/issues"
+    "url": "https://github.com/AndrewScott85/london-underground-be-continuation/issues"
   },
-  "homepage": "https://github.com/iO-Academy/2022-mar-london-underground-be#readme"
+  "homepage": "https://github.com/AndrewScott85/london-underground-be-continuation#readme"
 }

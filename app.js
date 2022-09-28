@@ -4,7 +4,11 @@ const cors = require('cors');
 const app = express();
 
 app.use(cors());
-const port = 3001;
+let port = process.env.PORT;
+if (port == null || port == "") {
+  port = 3001;
+}
+
 
 app.use(express.json());
 
