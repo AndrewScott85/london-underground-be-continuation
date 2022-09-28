@@ -1,8 +1,8 @@
-const MongoClient = require('mongodb').MongoClient;
+const { MongoClient, ServerApiVersion } = require('mongodb');
+const uri = "mongodb+srv://appconnect:YXNtbd8Aj0t330jk@cluster0.6jm0nfr.mongodb.net/?retryWrites=true&w=majority";
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
-const url = 'mongodb://root:password@localhost:27017';
 const dbName = 'tubulardb';
-const client = new MongoClient(url);
 
 const connectToDb = async () => {
     console.log(`In connect`);
@@ -14,3 +14,4 @@ const connectToDb = async () => {
 }
 
 module.exports.connectToDb = connectToDb;
+
