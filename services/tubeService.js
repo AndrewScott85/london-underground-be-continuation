@@ -46,11 +46,11 @@ const getJourneys = async (start, end) => {
                     singleJourneyArray.push(journey);
                     singleJourneyLines.push({"line" : journey.line, "stations" : journey.stations.map(station => station.name)})
                 }
-                else if (journey.stations.some(i => i.name === start)) {
+                if (journey.stations.some(i => i.name === start)) {
                     startArray.push(journey)
                     startLines.push({"line" : journey.line, "stations" : journey.stations.map(station => station.name)})
                 }
-                else if (journey.stations.some(i => i.name === end)) {
+                if (journey.stations.some(i => i.name === end)) {
                     endArray.push(journey)
                     endLines.push({"line" : journey.line, "stations" : journey.stations.map(station => station.name)})
                 }
