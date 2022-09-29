@@ -1,5 +1,5 @@
 ## London Underground
-An API for a London underground app
+An API for a London underground app. This is a continuation of a group project which can be found at https://github.com/iO-Academy/2022-mar-london-underground-be. Compared to the original, the backend now has support for journeys requiring a line change between start and end stations.
 
 ## Description
 London-Underground API is built using Node.JS, Express and Mongodb.
@@ -109,8 +109,5 @@ This API supports GET and POST
     
 # Authors
 
-[Alec Hamilton](https://github.com/alec-hamilton)
-
 [Andrew Scott](https://github.com/AndrewScott85)
 
-[Gediminas Melinauskas](https://github.com/Gantthebant)
