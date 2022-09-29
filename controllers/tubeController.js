@@ -1,8 +1,11 @@
 const tubeService = require('../services/tubeService');
 
-const getTubes = (req, res) => {
-    console.log('Controller: getTubes');
-    tubeService.getTubes().then((allTubes) => res.json(allTubes));
+const connected = (req, res) => {
+    console.log('Controller: connected');
+    return res.status(200).json({
+        code : 200,
+        message: "OK"
+    })
 }
 
 const getAllStations = (req, res) => {
@@ -17,6 +20,6 @@ const getJourneys = (req, res) => {
     tubeService.getJourneys(start, end).then((journeys) => res.json(journeys));
 }
 
-module.exports.getTubes = getTubes;
+module.exports.connected = connected;
 module.exports.getAllStations = getAllStations;
 module.exports.getJourneys = getJourneys;
