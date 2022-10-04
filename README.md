@@ -106,8 +106,4 @@ This API supports GET and POST
       "message": "Unknown route"
   }
   ```
-    
-# Authors
-
-[Andrew Scott](https://github.com/AndrewScott85)
 
