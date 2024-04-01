@@ -7,7 +7,7 @@ London-Underground API is built using Node.JS, Express and Mongodb.
 ## Getting Started
 1. Clone this repo:
 ```
-git clone git@github.com:iO-Academy/2022-mar-london-underground-be.git
+git clone git@github.com:AndrewScott85/london-underground-be-continuation.git
 ```
 ### Create the Database
 2. Open the Mongodb app.
