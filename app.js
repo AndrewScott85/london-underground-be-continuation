@@ -8,7 +8,7 @@ app.use(cors({
     origin: allowedOrigin
 }));
 
-// app.use(cors());
+
 let port = process.env.PORT;
 if (port == null || port == "") {
   port = 3001;
