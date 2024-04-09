@@ -8,6 +8,7 @@ const connected = (req, res) => {
     })
 }
 
+
 const getAllStations = (req, res) => {
     console.log('Controller: getAllStations');
     tubeService.getAllStations().then((allStations) => res.json(allStations));
