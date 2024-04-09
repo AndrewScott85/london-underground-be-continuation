@@ -1,6 +1,7 @@
 const MongoClient = require('mongodb').MongoClient;
 
-const url = 'mongodb://root:password@localhost:27017';
+// const url = 'mongodb://root:password@localhost:27017';
+url = 'mongodb://localhost:27017';
 const dbName = 'tubulardb';
 const client = new MongoClient(url);
 

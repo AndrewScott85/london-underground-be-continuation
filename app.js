@@ -2,10 +2,13 @@ const express = require('express');
 const router = require('./config/routes');
 const cors = require('cors');
 const app = express();
+const allowedOrigin = 'https://tubular-fe.netlify.app/';
 
 const port = 3001;
 
-app.use(cors());
+app.use(cors({
+    origin: allowedOrigin
+}));
 
 app.use(express.json());
 
